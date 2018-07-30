@@ -1,3 +1,14 @@
 {
-    "python.pythonPath": "C:\\Users\\Dinis.PC-DINIS\\Anaconda3\\python.exe"
+    "python.pythonPath": "C:\\Users\\Dinis.PC-DINIS\\Anaconda3\\python.exe",
+    "python.unitTest.unittestArgs": [
+        "-v",
+        "-s",
+        "./ProductivityTool",
+        "-p",
+        "test*.py"
+    ],
+    "python.unitTest.pyTestEnabled": false,
+    "python.unitTest.nosetestsEnabled": false,
+    "python.unitTest.unittestEnabled": false,
+    "python.unitTest.promptToConfigure": false
 }
