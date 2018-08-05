@@ -69,6 +69,10 @@ class FoodSpawner():
     def setFoodOnScreen(self, b):
         self.isFoodOnScreen = b #b is boolean
 
+def gameOver():
+    pygame.quit()
+    sys.exit()
+
 window = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("Snake Game 1.0")
 fps = pygame.time.Clock()
@@ -77,10 +81,6 @@ score = 0
 
 snake = Snake()
 foodSpawn = FoodSpawner()
-
-def gameOver():
-    pygame.quit()
-    sys.exit()
 
 #Game definition
 while True:
@@ -102,7 +102,7 @@ while True:
         score += 1
         foodSpawn.setFoodOnScreen(False)
 
-    window.fill(pygame.Color(225,225,225))
+    window.fill(pygame.Color(192,192,192))
     for pos in snake.getBody():
         pygame.draw.rect(window, pygame.Color(0,225,0), pygame.Rect(pos[0], pos[1], 10, 10))
     pygame.draw.rect(window, pygame.Color(225,0,0), pygame.Rect(foodPos[0], foodPos[1], 10, 10))
