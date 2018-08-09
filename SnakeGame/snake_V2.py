@@ -26,7 +26,7 @@ green = (0,155,0)
 clock = pygame.time.Clock()
 direction = "right"
 block_size = 20
-FPS=30
+FPS=20
 #font object
 small_font = pygame.font.SysFont("comicsansms", 25) #size font 25
 medium_font = pygame.font.SysFont("comicsansms", 50) #size font 25
@@ -83,7 +83,7 @@ def score(score):
 
 def pause():
     paused = True
-    gameDisplay.fill(white)
+    #gameDisplay.fill(white)
     message_to_screen("Pause", black, -100, "large")
     message_to_screen("Press C to continue or Q to Quit", black, 25, "small")
     pygame.display.update()
@@ -144,12 +144,12 @@ def gameLoop():
 
 
     while not gameExit:
-        while gameOver == True:
-            gameDisplay.fill(white)
+        if gameOver == True:
+            #gameDisplay.fill(white)
             message_to_screen("Game Over", red, -50, "large")
             message_to_screen("Press C to play again or Q to exit", black, 50, "medium")
             pygame.display.update()
-
+        while gameOver == True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     gameOver = False
