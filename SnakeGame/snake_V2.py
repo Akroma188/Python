@@ -1,12 +1,12 @@
 import pygame
 import time 
-import random #for apple
-
+import random  # for apple
+#pylint: disable=E1101
 pygame.init()
 
 disp_width = 800
 disp_height = 600
-gameDisplay= pygame.display.set_mode((disp_width,disp_height))
+gameDisplay = pygame.display.set_mode((disp_width, disp_height))
 
 pygame.display.set_caption('Snake_V2')
 
@@ -18,19 +18,21 @@ pygame.display.set_icon(icon)
 
 pygame.display.update()
 
-white=(255,255,255)
-black = (0,0,0)
-red = (255,0,0)
-green = (0,155,0)
+white = (255, 255, 255)
+black = (0, 0, 0)
+red = (255, 0, 0)
+green = (0, 155, 0)
 
 clock = pygame.time.Clock()
 direction = "right"
 block_size = 20
-FPS=20
-#font object
-small_font = pygame.font.SysFont("comicsansms", 25) #size font 25
-medium_font = pygame.font.SysFont("comicsansms", 50) #size font 25
-large_font = pygame.font.SysFont("comicsansms", 70) #size font 25
+FPS = 20
+
+# font object
+small_font = pygame.font.SysFont("comicsansms", 25)  # size font 25
+medium_font = pygame.font.SysFont("comicsansms", 50)  # size font 25
+large_font = pygame.font.SysFont("comicsansms", 70)  # size font 25
+
 
 def game_intro():
     intro = True
@@ -46,7 +48,6 @@ def game_intro():
                     pygame.quit()
                     quit()
 
-
         gameDisplay.fill(white)
         message_to_screen("Welcome to Snake 2.0", green, -100, "large")
         message_to_screen("Eat apple to improve your score", black, -30)
@@ -58,6 +59,7 @@ def game_intro():
 
 def snake(block_size, snake_list):
 
+
     if direction == "right":
         head = pygame.transform.rotate(img, 270)
     if direction == "left":
@@ -67,9 +69,9 @@ def snake(block_size, snake_list):
     if direction == "down":
         head = pygame.transform.rotate(img, 180)
 
-    gameDisplay.blit(head, (snake_list[-1][0], snake_list[-1][1]))  #make the head
+    gameDisplay.blit(head, (snake_list[-1][0], snake_list[-1][1]))  # make the head
 
-    for XnY in snake_list[:-1]: #everything except the last element -> the head
+    for XnY in snake_list[:-1]:     # everything except the last element -> the head
         pygame.draw.rect(gameDisplay, green, [XnY[0], XnY[1], block_size, block_size])
 
 def randAppleGen():
@@ -226,7 +228,7 @@ def gameLoop():
                 while randAppleX > disp_width- apple_thickness or randAppleY > disp_height - apple_thickness:
                     randAppleX, randAppleY = randAppleGen()
                 snake_length += 1
-        
+
         clock.tick(FPS)
 
     gameDisplay.fill(white)
