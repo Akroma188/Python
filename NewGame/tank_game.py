@@ -32,11 +32,68 @@ pygame.display.update()
 
 clock = pygame.time.Clock()
 
+# tank cts
+tankWidth = 40
+tankHeight = 20
+turretWidth = 5
+wheelWidth = 5
+
 # font object
 small_font = pygame.font.SysFont("comicsansms", 25)  # size font 25
 medium_font = pygame.font.SysFont("comicsansms", 50)  # size font 25
 large_font = pygame.font.SysFont("comicsansms", 70)  # size font 25
 
+def tank(x, y, turrPos):
+    x = int(x)
+    y = int(y)
+
+    possibleTurrets = [(x-27, y-2),
+                        (x-26, y-5),
+                        (x-25, y-8),
+                        (x-23, y-12),
+                        (x-20, y-14),
+                        (x-18, y-15),
+                        (x-15, y-17),
+                        (x-13, y-19),
+                        (x-11, y-21)]
+
+    pygame.draw.circle(gameDisplay, black, (x, y), int(tankHeight/2))
+    pygame.draw.rect(gameDisplay, black, (x-tankHeight, y, tankWidth, tankHeight))
+
+    # draw gun
+    pygame.draw.line(gameDisplay, black, (x, y), possibleTurrets[turrPos], turretWidth)
+    starX = 15
+    for num in range(7):
+        pygame.draw.circle(gameDisplay, black, (x-starX, y+20), wheelWidth)
+        starX -= 5
+
+    return possibleTurrets[turrPos]
+
+def barrier(x_barrier_location, random_height, barrier_width):
+    
+    pygame.draw.rect(gameDisplay, black, [x_barrier_location, disp_height - random_height, barrier_width, random_height])
+
+def fireShell(xy, tankx, tanky, turPos):
+    fire = True
+    starting_shell = list(xy)
+
+    while fire:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        pygame.draw.circle(gameDisplay, red, (starting_shell[0], starting_shell[1]), 5)
+
+        starting_shell[0] -= (12 - turPos) * 2
+
+        starting_shell[1] += int((((starting_shell[0] - xy[0]) * 0.015) ** 2) - (turPos+turPos/(12 - turPos)))
+
+        if starting_shell[1] > disp_height:
+            fire = False
+        # print(starting_shell[0], starting_shell[1])
+        pygame.display.update()
+        clock.tick(30)
 
 def game_intro():
     intro = True
@@ -163,7 +220,21 @@ def gameLoop():
     gameOver = False
     FPS = 20
 
+    barrier_width = 50
+
+    mainTankX = disp_width * 0.9
+    mainTankY = disp_height * 0.7
+    tankMove = 0
+
+    currTurPos = 0
+    changeTur = 0
+
+    x_barrier_location = disp_width/2 + random.randint(-0.2 * disp_width, 0.2 * disp_width)
+    random_height = random.randrange(disp_height * 0.1, disp_height * 0.6)
+
     while not gameExit:
+        gameDisplay.fill(white)
+        gun = tank(mainTankX, mainTankY, currTurPos)
         if gameOver == True:
             #gameDisplay.fill(white)
             message_to_screen("Game Over", red, -50, "large")
@@ -188,17 +259,38 @@ def gameLoop():
                 break
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    pass
+                    tankMove = -5
                 elif event.key == pygame.K_RIGHT:
-                    pass
+                    tankMove = 5
                 elif event.key == pygame.K_UP:
-                    pass
+                    changeTur = 1
                 elif event.key == pygame.K_DOWN:
-                    pass
+                    changeTur = -1
                 elif event.key == pygame.K_p:
                     pause()
+                elif event.key == pygame.K_SPACE:
+                    fireShell(gun, mainTankX, mainTankY, currTurPos)
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    tankMove = 0
+                elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    changeTur = 0
                 
-        gameDisplay.fill(white)
+        
+
+        mainTankX += tankMove
+        currTurPos += changeTur
+        if currTurPos > 8:
+            currTurPos = 8
+        elif currTurPos < 0:
+            currTurPos = 0
+
+        if mainTankX - tankWidth/2 < x_barrier_location + barrier_width:
+            mainTankX += 5
+
+
+        
+        barrier(x_barrier_location, random_height, barrier_width)
         pygame.display.update()
         clock.tick(FPS)
 
