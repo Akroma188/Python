@@ -8,7 +8,7 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 
 yellow=(200, 200, 0)
-ligh_yellow = (255, 255, 0)
+light_yellow = (255, 255, 0)
 
 red = (200, 0, 0)
 light_red = (255, 0, 0)
@@ -37,6 +37,8 @@ tankWidth = 40
 tankHeight = 20
 turretWidth = 5
 wheelWidth = 5
+
+ground_height = 35
 
 # font object
 small_font = pygame.font.SysFont("comicsansms", 25)  # size font 25
@@ -73,7 +75,33 @@ def barrier(x_barrier_location, random_height, barrier_width):
     
     pygame.draw.rect(gameDisplay, black, [x_barrier_location, disp_height - random_height, barrier_width, random_height])
 
-def fireShell(xy, tankx, tanky, turPos):
+def explosion(x, y, size):
+    explode = True
+
+    while explode:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        start_point = x,y
+        color_choices = [red, light_red, yellow, light_yellow]
+
+        magnitude = 1
+        while magnitude < size:
+            exploding_bit_x = x + random.randrange(-1 * magnitude, magnitude)
+            exploding_bit_y = y + random.randrange(-1 * magnitude, magnitude)
+
+            pygame.draw.circle(gameDisplay, color_choices[random.randrange(0, 4)], (exploding_bit_x, exploding_bit_y), random.randrange(1, 5))
+            magnitude += 1
+
+            pygame.display.update()
+
+            clock.tick(100)
+
+        explode = False
+
+def fireShell(xy, tankx, tanky, turPos, gun_power, x_barrier_location, barrier_width, random_height):
     fire = True
     starting_shell = list(xy)
 
@@ -87,13 +115,32 @@ def fireShell(xy, tankx, tanky, turPos):
 
         starting_shell[0] -= (12 - turPos) * 2
 
-        starting_shell[1] += int((((starting_shell[0] - xy[0]) * 0.015) ** 2) - (turPos+turPos/(12 - turPos)))
+        starting_shell[1] += int((((starting_shell[0] - xy[0]) * 0.015/(gun_power/50)) ** 2) - (turPos+turPos/(12 - turPos)))
 
-        if starting_shell[1] > disp_height:
+        if starting_shell[1] > disp_height - ground_height:
             fire = False
-        # print(starting_shell[0], starting_shell[1])
+            hit_x = int((starting_shell[0] * (disp_height - ground_height))/starting_shell[1])
+            hit_y = int(disp_height - ground_height)
+            explosion(hit_x, hit_y, 50)
+
+        check_x_1 = starting_shell[0] <= x_barrier_location + barrier_width
+        check_x_2 = starting_shell[0] >= x_barrier_location
+        check_y_1 = starting_shell[1] <= disp_height
+        check_y_2 = starting_shell[1] >= disp_height - random_height
+
+        if check_x_1 and check_x_2 and check_y_1 and check_y_2:
+            fire = False
+            hit_x = int(starting_shell[0])
+            hit_y = int(starting_shell[1])
+            explosion(hit_x, hit_y, 50)
+
         pygame.display.update()
-        clock.tick(30)
+        clock.tick(100)
+
+def power(level):
+    text = small_font.render("Power: " + str(level) + "%", True, black)
+    gameDisplay.blit(text, [disp_height/2, 0])
+
 
 def game_intro():
     intro = True
@@ -117,7 +164,7 @@ def game_intro():
         # message_to_screen("Press C to play, P to Pause and Q to quit", black, 180)
 
         button("Play", 150, 500, 100, 50, green, light_green, action = 'play')
-        button("Controls", 350, 500, 100, 50, yellow, ligh_yellow, action = 'controls')
+        button("Controls", 350, 500, 100, 50, yellow, light_yellow, action = 'controls')
         button("Quit", 550, 500, 100, 50, red, light_red, action = 'quit')
 
         pygame.display.update()
@@ -179,7 +226,7 @@ def game_controls():
         # message_to_screen("Press C to play, P to Pause and Q to quit", black, 180)
 
         button("Play", 150, 500, 100, 50, green, light_green, action = 'play')
-        button("Menu", 350, 500, 100, 50, yellow, ligh_yellow, action = 'menu')
+        button("Menu", 350, 500, 100, 50, yellow, light_yellow, action = 'menu')
         button("Quit", 550, 500, 100, 50, red, light_red, action = 'quit')
 
         pygame.display.update()
@@ -223,18 +270,20 @@ def gameLoop():
     barrier_width = 50
 
     mainTankX = disp_width * 0.9
-    mainTankY = disp_height * 0.7
+    mainTankY = disp_height * 0.9
     tankMove = 0
 
     currTurPos = 0
     changeTur = 0
 
+    fire_power = 50
+    power_change = 0
+
     x_barrier_location = disp_width/2 + random.randint(-0.2 * disp_width, 0.2 * disp_width)
     random_height = random.randrange(disp_height * 0.1, disp_height * 0.6)
 
     while not gameExit:
-        gameDisplay.fill(white)
-        gun = tank(mainTankX, mainTankY, currTurPos)
+
         if gameOver == True:
             #gameDisplay.fill(white)
             message_to_screen("Game Over", red, -50, "large")
@@ -269,13 +318,18 @@ def gameLoop():
                 elif event.key == pygame.K_p:
                     pause()
                 elif event.key == pygame.K_SPACE:
-                    fireShell(gun, mainTankX, mainTankY, currTurPos)
+                    fireShell(gun, mainTankX, mainTankY, currTurPos, fire_power, x_barrier_location, barrier_width, random_height)
+                elif event.key == pygame.K_a:
+                    power_change = -1
+                elif event.key == pygame.K_d:
+                    power_change = 1
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     tankMove = 0
                 elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     changeTur = 0
-                
+                elif event.key == pygame.K_a or event.key == pygame.K_d:
+                    power_change = 0
         
 
         mainTankX += tankMove
@@ -289,8 +343,14 @@ def gameLoop():
             mainTankX += 5
 
 
+        gameDisplay.fill(white)
+        gun = tank(mainTankX, mainTankY, currTurPos)
+
+        fire_power += power_change
+        power(fire_power)
         
         barrier(x_barrier_location, random_height, barrier_width)
+        gameDisplay.fill(green, rect=[0, disp_height - ground_height, disp_width, ground_height])
         pygame.display.update()
         clock.tick(FPS)
 
