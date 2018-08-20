@@ -1,6 +1,6 @@
 import pygame
 import time 
-import random  # for apple
+import random  # for applef
 #pylint: disable=E1101
 pygame.init()
 
@@ -29,9 +29,9 @@ block_size = 20
 FPS = 20
 
 # font object
-small_font = pygame.font.SysFont("comicsansms", 25)  # size font 25
-medium_font = pygame.font.SysFont("comicsansms", 50)  # size font 25
-large_font = pygame.font.SysFont("comicsansms", 70)  # size font 25
+small_font = pygame.font.SysFont("verdana", 25)  # size font 25
+medium_font = pygame.font.SysFont("verdana", 50)  # size font 25
+large_font = pygame.font.SysFont("verdana", 70)  # size font 25
 
 
 def game_intro():

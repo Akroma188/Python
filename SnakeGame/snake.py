@@ -2,7 +2,7 @@ import pygame
 import time #used to run frames
 import sys  #system used to exit the game and console window
 import random #to generate random food
-
+#pylint: disable=E1101
 class Snake():
     def __init__(self):
         self.position = [100,50]
