@@ -7,6 +7,9 @@ import time
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 
+
+
+
 # Size of each block - apple and snake 
 BLOCK_SIZE = 20
 FPS = 20
@@ -37,52 +40,49 @@ large_font = pygame.font.SysFont('verdana', 70)  # size font 70
 
 class Apple:
 	def __init__(self):
-		self.apple_head_position = [round(random.randint(0, WINDOW_WIDTH - BLOCK_SIZE)/10.0)*20, 
-								round(random.randint(0, WINDOW_HEIGHT - BLOCK_SIZE)/10.0)*20] 
-		self.apple_on_game = True
+		self.apple_position = 0
+		self.apple_on_game = False
 	
 	def spawn_apple(self):
 		if self.apple_on_game == False:
-			self.apple_head_position = [round(random.randint(0, WINDOW_WIDTH - BLOCK_SIZE)/10.0)*20, 
-									round(random.randint(0, WINDOW_HEIGHT - BLOCK_SIZE)/10.0)*20]
+			self.apple_position = [random.randint(0,(WINDOW_WIDTH-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE, 
+									random.randint(0,(WINDOW_HEIGHT-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE]
 			self.apple_on_game = True
-			return self.apple_head_position
+			return self.apple_position
 
 		
 
 class Snake:
 	def __init__(self):
-		self.head_position = [400,300]
+		self.head_position = [380,300]
 		self.body = [[380, 300], [360, 300], [340, 300]]
 		self.direction = 'RIGHT'
 		self.change_direction_to = self.direction
 		self.score = 0
 
-	def change_direction(self):
-		if self.change_direction_to == 'RIGHT' and not self.direction == 'LEFT':
+	def change_direction(self, dir):
+		if dir == 'RIGHT' and not self.direction == 'LEFT':
 			self.direction = 'RIGHT'
-		elif self.change_direction_to == 'LEFT' and not self.direction == 'RIGHT':
+		elif dir == 'LEFT' and not self.direction == 'RIGHT':
 			self.direction = 'LEFT'
-		elif self.change_direction_to == 'UP' and not self.direction == 'DOWN':
+		elif dir == 'UP' and not self.direction == 'DOWN':
 			self.direction = 'UP'
-		elif self.change_direction_to == 'DOWN' and not self.direction == 'UP':
+		elif dir == 'DOWN' and not self.direction == 'UP':
 			self.direction = 'DOWN'
 		
-	def move(self):
+	def move(self, applePos):
 		if self.direction == 'RIGHT':
 			self.head_position[0] += BLOCK_SIZE
 		elif self.direction == 'LEFT':
-			self.head_position -= BLOCK_SIZE
+			self.head_position[0] -= BLOCK_SIZE
 		elif self.direction == 'UP':
-			self.head_position -= BLOCK_SIZE
+			self.head_position[1] -= BLOCK_SIZE
 		elif self.direction == 'DOWN':
-			self.head_position += BLOCK_SIZE
+			self.head_position[1] += BLOCK_SIZE
 
-	def head_head_position(self):
-		return self.head_position
-
-	def full_body(self):
-		return self.body
+		self.body.insert(0, list(self.head_position))
+		if self.head_position != applePos:
+			self.body.pop() 
 
 	def collision(self):
 		if self.head_position[0] > WINDOW_WIDTH or self.head_position[0] < 0:
@@ -90,7 +90,7 @@ class Snake:
 		elif self.head_position[1] > WINDOW_HEIGHT or self.head_position[1] < 0:
 			return True
 
-		for bodyPart in self.body:
+		for bodyPart in self.body[1:]:
 			if self.head_position == bodyPart:
 				return True
 		return False
@@ -101,6 +101,11 @@ class Snake:
 			return True
 		return False
 
+	def time(self):
+		pass
+
+	def fitness(self):
+		pass
 
 # Functions to display Text ------------------------------------------
 def text_objects(text, color, size):
@@ -161,22 +166,33 @@ def pause():
 					pygame.quit()
 					quit()
 
+def score(score):
+	text = small_font.render("Score: " + str(score), True, WHITE)
+	screen.blit(text, [0,0])
+
+
 # Draw Snake ---------------------------------------------
 def draw_snake(head, body, direction, head_img, body_img):
 	if direction == "RIGHT":
-		headPart = pygame.transform.rotate(head_img, 270)
-	if direction == "LEFT":
-		headPart = pygame.transform.rotate(head_img, 90)
-	if direction == "UP":
 		headPart = head_img
-	if direction == "DOWN":
+	if direction == "LEFT":
 		headPart = pygame.transform.rotate(head_img, 180)
+	if direction == "UP":
+		headPart = pygame.transform.rotate(head_img, 90)
+	if direction == "DOWN":
+		headPart = pygame.transform.rotate(head_img, 270)
 
 	screen.blit(headPart, (head[0], head[1]))  # make the head
 
 	# Body 
-	for pos in body:
+	for pos in body[1:]:
 		screen.blit(body_img, (pos[0], pos[1]))
+
+def drawApple(apple_pos):
+	pygame.draw.rect(screen, RED, (apple_pos[0], apple_pos[1], BLOCK_SIZE, BLOCK_SIZE))
+
+
+
 
 
 
@@ -184,7 +200,74 @@ def draw_snake(head, body, direction, head_img, body_img):
 # Game Definition
 snake = Snake()
 apple = Apple()
-
+print('Len: ', len(snake.body))
 pygame.display.flip()
 
 game_intro()
+
+
+gameExit = False
+gameOver = False
+
+while not gameExit:
+	if gameOver == True:
+		message_to_screen("Game Over", 	RED, -50, "large")
+		message_to_screen("Press C to play again or Q to exit", BLACK, 50, "medium")
+		pygame.display.update()
+	while gameOver == True:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				gameOver = False
+				gameExit = True
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_q:
+					gameExit = True
+					gameOver = False 
+				elif event.key == pygame.K_c:
+					pass
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			gameOver = False
+			gameExit = True
+			break
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_LEFT:
+				snake.change_direction('LEFT')
+			elif event.key == pygame.K_RIGHT:
+				snake.change_direction('RIGHT')
+			elif event.key == pygame.K_UP:
+				snake.change_direction('UP')
+			elif event.key == pygame.K_DOWN:
+				snake.change_direction('DOWN')
+			elif event.key == pygame.K_p:
+				pause()		
+	
+	snake.move(apple.apple_position)
+
+	if snake.collision():
+		gameOver = True
+
+
+	if snake.eaten_apple(apple.apple_position):
+		print('Apple Eaten: ', snake.head_position, apple.apple_position)
+		snake.score +=1
+		apple.apple_on_game = False
+		snake.body.insert(0, list(snake.head_position))
+
+
+	if not apple.apple_on_game:
+		applePlace = apple.spawn_apple()
+		apple.apple_on_game = True
+
+	screen.fill(BACKGROUND)
+	score(snake.score)
+	drawApple(applePlace)
+	draw_snake(snake.head_position, snake.body, snake.direction, snakeHead, bodyPart)
+	
+	# screen.blit(snakeHead, (snake.head_position[0], snake.head_position[1]))
+	# for pos in snake.body[1:]:
+	# 	screen.blit(bodyPart, (apple.apple_position[0], apple.apple_position[1]))
+		
+	pygame.display.flip()
+	
+	clock.tick(30)
