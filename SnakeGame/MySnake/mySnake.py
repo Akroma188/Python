@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import numpy
 #pylint: disable=E1101
 
 # Size of window -------------------
@@ -59,6 +60,8 @@ class Snake:
 		self.direction = 'RIGHT'
 		self.change_direction_to = self.direction
 		self.score = 0
+		self.fitness = 0
+		self.time_alive = 0
 
 	def change_direction(self, dir):
 		if dir == 'RIGHT' and not self.direction == 'LEFT':
@@ -104,8 +107,12 @@ class Snake:
 	def time(self):
 		pass
 
-	def fitness(self):
-		pass
+	def calcFitness(self):
+		if self.score < 10:
+			self.fitness = self.time_alive ** 2 + self.score **2
+		else:
+			self.fitness = self.time_alive * self.score ** 2
+
 
 # Functions to display Text ------------------------------------------
 def text_objects(text, color, size):
@@ -193,10 +200,6 @@ def drawApple(apple_pos):
 
 
 
-
-
-
-
 # Game Definition
 snake = Snake()
 apple = Apple()
@@ -250,7 +253,6 @@ while not gameExit:
 
 	if snake.eaten_apple(apple.apple_position):
 		print('Apple Eaten: ', snake.head_position, apple.apple_position)
-		snake.score +=1
 		apple.apple_on_game = False
 		snake.body.insert(0, list(snake.head_position))
 
