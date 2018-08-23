@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 import numpy
+import csv
 #pylint: disable=E1101
 
 # Size of window -------------------
@@ -61,7 +62,8 @@ class Snake:
 		self.change_direction_to = self.direction
 		self.score = 0
 		self.fitness = 0
-		self.time_alive = 0
+		self.clock = pygame.time.Clock()
+		self.time = 0
 
 	def change_direction(self, dir):
 		if dir == 'RIGHT' and not self.direction == 'LEFT':
@@ -88,9 +90,10 @@ class Snake:
 			self.body.pop() 
 
 	def collision(self):
-		if self.head_position[0] > WINDOW_WIDTH or self.head_position[0] < 0:
+		if self.head_position[0] >= WINDOW_WIDTH or self.head_position[0] < 0:
 			return True
-		elif self.head_position[1] > WINDOW_HEIGHT or self.head_position[1] < 0:
+		elif self.head_position[1] >= WINDOW_HEIGHT or self.head_position[1] < 0:
+			print(self.head_position[0], self.head_position[1])
 			return True
 
 		for bodyPart in self.body[1:]:
@@ -104,14 +107,22 @@ class Snake:
 			return True
 		return False
 
-	def time(self):
-		pass
+	def make_a_clock(self):
+		self.clock = pygame.time.Clock()
+
+	def get_time_alive(self):
+		self.clock.tick()
+		dt = self.clock.get_time()
+		self.time += dt
+		return self.time
+
 
 	def calcFitness(self):
 		if self.score < 10:
-			self.fitness = self.time_alive ** 2 + self.score **2
+			self.fitness = (self.time/1000) ** 2 + self.score **2
 		else:
-			self.fitness = self.time_alive * self.score ** 2
+			self.fitness = (self.time/1000) * self.score ** 2
+		return round(self.fitness, 3)
 
 
 # Functions to display Text ------------------------------------------
@@ -177,6 +188,14 @@ def score(score):
 	text = small_font.render("Score: " + str(score), True, WHITE)
 	screen.blit(text, [0,0])
 
+def print_time(time):
+	text = small_font.render("Time: " + str(time), True, WHITE)
+	screen.blit(text, [400,0])
+
+def print_best_fitness(fitness):
+	text = small_font.render("Fitness: " + str(fitness), True, WHITE)
+	screen.blit(text, [0, WINDOW_HEIGHT - 35])
+
 
 # Draw Snake ---------------------------------------------
 def draw_snake(head, body, direction, head_img, body_img):
@@ -207,7 +226,7 @@ print('Len: ', len(snake.body))
 pygame.display.flip()
 
 game_intro()
-
+snake.make_a_clock()
 
 gameExit = False
 gameOver = False
@@ -246,7 +265,6 @@ while not gameExit:
 				pause()		
 	
 	snake.move(apple.apple_position)
-
 	if snake.collision():
 		gameOver = True
 
@@ -254,7 +272,6 @@ while not gameExit:
 	if snake.eaten_apple(apple.apple_position):
 		print('Apple Eaten: ', snake.head_position, apple.apple_position)
 		apple.apple_on_game = False
-		snake.body.insert(0, list(snake.head_position))
 
 
 	if not apple.apple_on_game:
@@ -262,6 +279,8 @@ while not gameExit:
 		apple.apple_on_game = True
 
 	screen.fill(BACKGROUND)
+	print_time(snake.get_time_alive()/1000)
+	print_best_fitness(snake.calcFitness())
 	score(snake.score)
 	drawApple(applePlace)
 	draw_snake(snake.head_position, snake.body, snake.direction, snakeHead, bodyPart)
@@ -271,5 +290,16 @@ while not gameExit:
 	# 	screen.blit(bodyPart, (apple.apple_position[0], apple.apple_position[1]))
 		
 	pygame.display.flip()
-	
 	clock.tick(30)
+
+# write to file 
+myData = [['Time', 'Score', 'Fitness'],
+			[snake.get_time_alive(), snake.score, snake.calcFitness()]]
+
+myFile = open('information.csv', 'w')
+with myFile:
+	writer = csv.writer(myFile)
+	writer.writerows(myData)
+
+pygame.quit()
+quit()
