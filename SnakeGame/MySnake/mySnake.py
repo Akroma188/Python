@@ -2,12 +2,12 @@ import pygame
 import random
 import time
 import numpy
-import csv
 #pylint: disable=E1101
 
 # Size of window -------------------
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
+# gonna add window extension for info and neural net
 
 
 
@@ -122,7 +122,7 @@ class Snake:
 			self.fitness = (self.time/1000) ** 2 + self.score **2
 		else:
 			self.fitness = (self.time/1000) * self.score ** 2
-		return round(self.fitness, 3)
+		return round(self.fitness, 2)
 
 
 # Functions to display Text ------------------------------------------
@@ -140,6 +140,17 @@ def message_to_screen(msg, color, y_displace = 0, size = 'small'):
 	texSurf, textRect = text_objects(msg, color, size)
 	textRect.center = (WINDOW_WIDTH/2), (WINDOW_HEIGHT/2) + y_displace
 	screen.blit(texSurf, textRect)
+def score(score):
+	text = small_font.render("Score: " + str(score), True, WHITE)
+	screen.blit(text, [0,0])
+
+def print_time(time):
+	text = small_font.render("Time: " + str(time), True, WHITE)
+	screen.blit(text, [400,0])
+
+def print_best_fitness(fitness):
+	text = small_font.render("Fitness: " + str(fitness), True, WHITE)
+	screen.blit(text, [0, WINDOW_HEIGHT - 35])
 
 # Funtions for Game Intro, Pause and Game Over -------------------------
 def game_intro():
@@ -183,19 +194,6 @@ def pause():
 				elif event.key == pygame.K_q:
 					pygame.quit()
 					quit()
-
-def score(score):
-	text = small_font.render("Score: " + str(score), True, WHITE)
-	screen.blit(text, [0,0])
-
-def print_time(time):
-	text = small_font.render("Time: " + str(time), True, WHITE)
-	screen.blit(text, [400,0])
-
-def print_best_fitness(fitness):
-	text = small_font.render("Fitness: " + str(fitness), True, WHITE)
-	screen.blit(text, [0, WINDOW_HEIGHT - 35])
-
 
 # Draw Snake ---------------------------------------------
 def draw_snake(head, body, direction, head_img, body_img):
