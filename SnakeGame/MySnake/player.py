@@ -34,8 +34,8 @@ pygame.init()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('My Snake')
 clock = pygame.time.Clock()
-snakeHead = pygame.image.load('images/head.png')
-bodyPart = pygame.image.load('images/body.png')
+snakeHead = pygame.image.load('head.png')
+bodyPart = pygame.image.load('body.png')
 
 # Fonts ---------------------------
 small_font = pygame.font.SysFont('verdana', 25)  # size font 25
@@ -134,65 +134,6 @@ class Snake:
 		else:
 			self.fitness = (self.time/1000) * self.score ** 2
 		return round(self.fitness, 2)
-
-	# vision looks up in 8 directions
-	# takes in account, distance to apple, wall and body
-	# 8
-	def eyes(self):
-		# Up direction 
-		result = self.look_direction(vector = [0, -BLOCK_SIZE])
-		self.vision[0] = result[0]
-		self.vision[1] = result[1]
-		self.vision[2] = result[2]
-
-		return self.vision
-
-	def look_direction(self, vector=[0,0]):
-		result=[]
-		# make list to matrix using numpy
-		vector = np.array(vector)
-		actual_pos = np.array(self.head_position)
-		print('Print actual pos: ', actual_pos)
-		applePos = np.array(self.apple_position)
-
-		appleFound = False
-		bodyFound = False
-		while actual_pos[0] > 0 or actual_pos[0] < WINDOW_WIDTH or actual_pos[1] > 0 or actual_pos[1] < WINDOW_HEIGHT:
-			actual_pos += vector
-			if not appleFound:
-				if actual_pos.all() == applePos.all():
-					head_pos=np.array(self.head_position)
-					print('Print head pos: ', head_pos)
-					norm_position = actual_pos-head_pos
-					print('Print norm pos: ', norm_position)
-					distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
-					print('this is the distance: ', distance)
-					result.insert(0, 1/distance)
-					appleFound = True
-
-			if not bodyFound:
-				for part in self.body[1:]:
-					bodyPart=np.array(part)
-					print(1)
-					if actual_pos.all() == bodyPart.all():
-						print(2)
-						head_pos=np.array(self.head_position)
-						print(3)
-						norm_position = actual_pos-head_pos
-						print(4)
-						distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
-						print(5)
-						result.insert(1, 1/distance)
-						print(6)
-						bodyFound = True
-		head_pos=np.array(self.head_position)
-		norm_position = actual_pos-head_pos
-		distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
-		result.insert(2, 1/distance)
-
-		return list(result)
-
-
 
 # Functions to display Text ------------------------------------------
 def text_objects(text, color, size):
@@ -339,7 +280,6 @@ while not gameExit:
 	if snake.eaten_apple():
 		print('Apple Eaten: ', snake.head_position, snake.apple_position)
 		snake.apple_on_game = False
-		print(snake.eyes())
 
 
 	if not snake.apple_on_game:

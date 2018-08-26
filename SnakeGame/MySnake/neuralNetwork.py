@@ -6,7 +6,7 @@ from scipy.stats import truncnorm
 # use sigmoid as activation funtion
 @np.vectorize
 def activation_function(x):
-    return 1 / (np.e ** -x)
+    return 1 / (1 + np.e ** -x)
 
 def truncated_normal(mean, sd, low, upp):
     return truncnorm((low - mean)/sd, (upp - mean)/sd, mean, sd)
@@ -35,6 +35,28 @@ class NeuralNetwork:
         X = truncated_normal(0, 1, -rad, rad) 
         self.who = X.rvs((self.num_output, self.num_sec_hidden + self.bias))   
 
-neural = NeuralNetwork(5,5,5,5)
+    def output(self, input):
+        input = np.concatenate((input, [1])) # add bias node
+        print(input)
+        input = np.array(input, ndmin=2).T
+        print('Transpose: \n',input)
+        first_h_layer_node_values = np.dot(self.wih, input)
+        print('wih * input: \n', first_h_layer_node_values)
+        first_h_layer_node_values = activation_function(first_h_layer_node_values)
+        print('Activation function: \n',first_h_layer_node_values)
+
+        first_h_layer_node_values = np.concatenate((first_h_layer_node_values, [[1]])) # add bias node
+        sec_h_layer_node_values = np.dot(self.whh, first_h_layer_node_values)
+        sec_h_layer_node_values = activation_function(sec_h_layer_node_values)
+
+        sec_h_layer_node_values = np.concatenate((sec_h_layer_node_values, [[1]]))
+        output = np.dot(self.who, sec_h_layer_node_values)
+        print(output)
+        return output
+
+
+
+neural = NeuralNetwork(2,4,4,4)
 neural.create_weight_matrices()
-print(neural.who)
+print('output: \n', neural.output([20,10]))
+
