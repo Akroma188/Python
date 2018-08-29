@@ -9,7 +9,7 @@ import neuralNetwork
 # Size of window -------------------
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-# gonna add window extension for info and neural net
+# TODO gonna add window extension for info and neural net
 
 
 
@@ -68,7 +68,8 @@ class Snake:
 		self.time = 0
 		self.apple_position = 0
 		self.apple_on_game = False
-		self.vision = []
+		self.brain=0
+		
 
 	def spawn_apple(self):
 		if self.apple_on_game == False:
@@ -139,55 +140,100 @@ class Snake:
 	# takes in account, distance to apple, wall and body
 	# 8
 	def eyes(self):
+		vision=[]
 		# Up direction 
 		result = self.look_direction(vector = [0, -BLOCK_SIZE])
-		self.vision[0] = result[0]
-		self.vision[1] = result[1]
-		self.vision[2] = result[2]
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
 
-		return self.vision
+		# UP/RIGHT direction
+		result = self.look_direction(vector = [BLOCK_SIZE, -BLOCK_SIZE])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# UP/LEFT direction
+		result = self.look_direction(vector = [-BLOCK_SIZE, -BLOCK_SIZE])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# RIGHT direction
+		result = self.look_direction(vector = [BLOCK_SIZE, 0])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# LEFT direction
+		result = self.look_direction(vector = [-BLOCK_SIZE, 0])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# DOWN direction
+		result = self.look_direction(vector = [0, BLOCK_SIZE])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# DOWN/RIGHTdirection
+		result = self.look_direction(vector = [BLOCK_SIZE, BLOCK_SIZE])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		# DOWN/LEFT direction
+		result = self.look_direction(vector = [-BLOCK_SIZE, BLOCK_SIZE])
+		vision.append(result[0])
+		vision.append(result[1])
+		vision.append(result[2])
+
+		
+		return vision
 
 	def look_direction(self, vector=[0,0]):
 		result=[]
 		# make list to matrix using numpy
 		vector = np.array(vector)
 		actual_pos = np.array(self.head_position)
-		print('Print actual pos: ', actual_pos)
 		applePos = np.array(self.apple_position)
 
 		appleFound = False
 		bodyFound = False
-		while actual_pos[0] > 0 or actual_pos[0] < WINDOW_WIDTH or actual_pos[1] > 0 or actual_pos[1] < WINDOW_HEIGHT:
+		# (actual_pos[0] > 0) or (actual_pos[0] < WINDOW_WIDTH) or (actual_pos[1] > 0) or (actual_pos[1] < WINDOW_HEIGHT):
+		while actual_pos[0] > 0 and actual_pos[0] < WINDOW_WIDTH and actual_pos[1] > 0 and actual_pos[1] < WINDOW_HEIGHT:
 			actual_pos += vector
 			if not appleFound:
 				if actual_pos.all() == applePos.all():
 					head_pos=np.array(self.head_position)
-					print('Print head pos: ', head_pos)
 					norm_position = actual_pos-head_pos
-					print('Print norm pos: ', norm_position)
-					distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
-					print('this is the distance: ', distance)
+					distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
 					result.insert(0, 1/distance)
+					print('Apple FOUND !!!!')
 					appleFound = True
 
 			if not bodyFound:
-				for part in self.body[1:]:
-					bodyPart=np.array(part)
-					print(1)
-					if actual_pos.all() == bodyPart.all():
-						print(2)
+				# print('Hi')
+				for bodyPart in self.body[1:]:
+					actualPos = list(actual_pos) # if statements for numpy are bad..
+					# print('pos: ' ,actualPos)
+					# print('after hi', bodyPart)
+					if actualPos == bodyPart:
 						head_pos=np.array(self.head_position)
-						print(3)
 						norm_position = actual_pos-head_pos
-						print(4)
-						distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
-						print(5)
+						distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
 						result.insert(1, 1/distance)
-						print(6)
 						bodyFound = True
+		
+		if not bodyFound:
+			result.insert(1, False)
+		if not appleFound:
+			result.insert(0, False)
+
 		head_pos=np.array(self.head_position)
 		norm_position = actual_pos-head_pos
-		distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)
+		distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
 		result.insert(2, 1/distance)
 
 		return list(result)
@@ -288,8 +334,13 @@ def drawApple(apple_pos):
 # -----------------------------------------------------------------
 # Game Definition -------------------------------------------------
 snake = Snake()
+
+# make brain
+snake.brain = neuralNetwork.NeuralNetwork(24,30,30,4)
+snake.brain.create_weight_matrices()
+# neural.create_weight_matrices()
+# print('output: \n', neural.output([20,10]))
 # apple = Apple()
-print('Len: ', len(snake.body))
 pygame.display.flip()
 
 game_intro()
@@ -331,15 +382,17 @@ while not gameExit:
 			elif event.key == pygame.K_p:
 				pause()		
 	
+	print(snake.eyes())
+
 	snake.move()
 	if snake.collision():
-		gameOver = True
+		# gameOver = True
+		print('Game Over')
 
 
 	if snake.eaten_apple():
 		print('Apple Eaten: ', snake.head_position, snake.apple_position)
 		snake.apple_on_game = False
-		print(snake.eyes())
 
 
 	if not snake.apple_on_game:
@@ -361,13 +414,13 @@ while not gameExit:
 	clock.tick(30)
 
 # write to file 
-myData = [['Time', 'Score', 'Fitness'],
-			[snake.get_time_alive(), snake.score, snake.calcFitness()]]
+# myData = [['Time', 'Score', 'Fitness'],
+# 			[snake.get_time_alive(), snake.score, snake.calcFitness()]]
 
-myFile = open('information.csv', 'w')
-with myFile:
-	writer = csv.writer(myFile)
-	writer.writerows(myData)
+# myFile = open('information.csv', 'w')
+# with myFile:
+# 	writer = csv.writer(myFile)
+# 	writer.writerows(myData)
 
 pygame.quit()
 quit()

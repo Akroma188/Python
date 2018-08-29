@@ -56,7 +56,7 @@ class NeuralNetwork:
 
 
 
-neural = NeuralNetwork(2,4,4,4)
-neural.create_weight_matrices()
-print('output: \n', neural.output([20,10]))
+# neural = NeuralNetwork(2,4,4,4)
+# neural.create_weight_matrices()
+# print('output: \n', neural.output([20,10]))
 
