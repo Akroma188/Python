@@ -7,15 +7,15 @@ import neuralNetwork as neural
 BLOCK_SIZE = 20
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
+mutation_threshold = 10
 class Snake:
-    
 	def __init__(self):
 		self.head_position = [380,300]
 		self.body = [[380, 300], [360, 300], [340, 300]]
 		self.direction = 'RIGHT'
 		self.score = 0
 		self.fitness = 0
-		self.clock = pygame.time.Clock()
+		# self.clock = pygame.time.Clock()
 		self.time = 0
 		self.apple_position = 0
 		self.apple_on_game = False
@@ -71,20 +71,18 @@ class Snake:
 			return True
 		return False
 
-	def make_a_clock(self):
-		self.clock = pygame.time.Clock()
+	def reset_time(self):
+		self.time = 0
 
 	def get_time_alive(self):
-		self.clock.tick()
-		dt = self.clock.get_time()
-		self.time += dt
+		self.time +=1
 		return self.time
 
 	def calcFitness(self):
 		if self.score < 10:
-			self.fitness = (self.time/1000) ** 2 + self.score **2
+			self.fitness = ((self.time) ** 2 + self.score **2)/10
 		else:
-			self.fitness = (self.time/1000) * self.score ** 2
+			self.fitness = ((self.time) * self.score ** 2)/10
 		return round(self.fitness, 2)
 
 	# vision looks up in 8 directions
@@ -196,10 +194,8 @@ class Snake:
 		information = self.eyes()
 
 		result = self.brain.output(information)
-		print(result)
 
 		index = result.index(max(result))
-		print(index)
 
 		if index == 0:
 			self.change_direction('UP')
@@ -209,4 +205,30 @@ class Snake:
 			self.change_direction('RIGHT')
 		if index == 3:
 			self.change_direction('LEFT')
+
+	def mutate(self):
+		wih = self.brain.wih
+		whh = self.brain.whh
+		who = self.brain.who
+
+		matrices = [wih, whh, who]
+
+		for matrix in matrices:
+			[r, c] = matrix.shape
+			for i in range(r):
+				for j in range(c):
+					# random number for mutation rate if it is below the threshold mutate the snake
+					random_number = random.randint(0,100)
+					if random_number < mutation_threshold:
+						value = [-10, 10]
+						pick = random.randint(0, 1)
+						matrix[i, j] = matrix[i, j] * (1 - value[pick]/100)
+						if matrix[i, j] < -1:
+							matrix[i, j] = -1
+						elif matrix[i, j] > 1:
+							matrix[i, j] = 1
+
+		self.brain.wih = matrices[0]
+		self.brain.whh = matrices[1]
+		self.brain.who = matrices[2]
 

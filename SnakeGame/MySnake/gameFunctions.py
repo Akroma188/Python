@@ -1,11 +1,7 @@
 import pygame
-import random
 import time
-import numpy as np
-import csv
-import neuralNetwork
-import individual
 #pylint: disable=E1101
+
 
 # Size of window -------------------
 WINDOW_WIDTH = 800
@@ -28,9 +24,7 @@ GREEN = (0, 155, 0)
 light_green = (0, 255, 0)
 BACKGROUND = (62, 62, 62)
 
-# Initialize Window ---------------
-pygame.init()
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
 pygame.display.set_caption('My Snake')
 clock = pygame.time.Clock()
 snakeHead = pygame.image.load('images/head.png')
@@ -40,6 +34,11 @@ bodyPart = pygame.image.load('images/body.png')
 small_font = pygame.font.SysFont('verdana', 25)  # size font 25
 medium_font = pygame.font.SysFont('verdana', 50)  # size font 50
 large_font = pygame.font.SysFont('verdana', 70)  # size font 70
+
+pygame.init()
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
+
 
 # Functions to display Text ------------------------------------------
 def text_objects(text, color, size):
@@ -130,93 +129,3 @@ def draw_snake(head, body, direction, head_img, body_img):
 
 def drawApple(apple_pos):
 	pygame.draw.rect(screen, RED, (apple_pos[0], apple_pos[1], BLOCK_SIZE, BLOCK_SIZE))
-
-
-# -----------------------------------------------------------------
-# Game Definition -------------------------------------------------
-snake = individual.Snake()
-pygame.display.flip()
-
-game_intro()
-snake.reset_time()
-
-gameExit = False
-gameOver = False
-i=1 # delete this after
-while not gameExit:
-	if gameOver == True:
-		message_to_screen("Game Over", 	RED, -50, "large")
-		message_to_screen("Press C to play again or Q to exit", BLACK, 50, "medium")
-		pygame.display.update()
-	while gameOver == True:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				gameOver = False
-				gameExit = True
-			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_q:
-					gameExit = True
-					gameOver = False 
-				elif event.key == pygame.K_c:
-					pass
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			gameOver = False
-			gameExit = True
-			break
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_LEFT:
-				snake.change_direction('LEFT')
-			elif event.key == pygame.K_RIGHT:
-				snake.change_direction('RIGHT')
-			elif event.key == pygame.K_UP:
-				snake.change_direction('UP')
-			elif event.key == pygame.K_DOWN:
-				snake.change_direction('DOWN')
-			elif event.key == pygame.K_p:
-				pause()		
-	
-	print('iteration: ', i)
-	i += 1
-	snake.decide_where_to_move()
-
-	snake.move()
-	if snake.collision():
-		# gameOver = True
-		print('Game Over')
-
-
-	if snake.eaten_apple():
-		print('Apple Eaten: ', snake.head_position, snake.apple_position)
-		snake.apple_on_game = False
-
-
-	if not snake.apple_on_game:
-		applePlace = snake.spawn_apple()
-		snake.apple_on_game = True
-
-	screen.fill(BACKGROUND)
-	print_time(snake.get_time_alive())
-	print_best_fitness(snake.calcFitness())
-	score(snake.score)
-	drawApple(applePlace)
-	draw_snake(snake.head_position, snake.body, snake.direction, snakeHead, bodyPart)
-	
-	# screen.blit(snakeHead, (snake.head_position[0], snake.head_position[1]))
-	# for pos in snake.body[1:]:
-	# 	screen.blit(bodyPart, (apple.apple_position[0], apple.apple_position[1]))
-		
-	pygame.display.flip()
-	clock.tick(FPS)
-
-# write to file 
-# myData = [['Time', 'Score', 'Fitness'],
-# 			[snake.get_time_alive(), snake.score, snake.calcFitness()]]
-
-# myFile = open('information.csv', 'w')
-# with myFile:
-# 	writer = csv.writer(myFile)
-# 	writer.writerows(myData)
-
-pygame.quit()
-quit()
