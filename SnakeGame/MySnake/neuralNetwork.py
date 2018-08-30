@@ -37,22 +37,19 @@ class NeuralNetwork:
 
     def output(self, input):
         input = np.concatenate((input, [1])) # add bias node
-        print(input)
         input = np.array(input, ndmin=2).T
-        print('Transpose: \n',input)
-        first_h_layer_node_values = np.dot(self.wih, input)
-        print('wih * input: \n', first_h_layer_node_values)
-        first_h_layer_node_values = activation_function(first_h_layer_node_values)
-        print('Activation function: \n',first_h_layer_node_values)
 
+        first_h_layer_node_values = np.dot(self.wih, input)
+        first_h_layer_node_values = activation_function(first_h_layer_node_values)
         first_h_layer_node_values = np.concatenate((first_h_layer_node_values, [[1]])) # add bias node
+
         sec_h_layer_node_values = np.dot(self.whh, first_h_layer_node_values)
         sec_h_layer_node_values = activation_function(sec_h_layer_node_values)
-
         sec_h_layer_node_values = np.concatenate((sec_h_layer_node_values, [[1]]))
+
         output = np.dot(self.who, sec_h_layer_node_values)
-        print(output)
-        return output
+
+        return list(output)
 
 
 

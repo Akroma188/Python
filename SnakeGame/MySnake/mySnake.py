@@ -4,14 +4,13 @@ import time
 import numpy as np
 import csv
 import neuralNetwork
+import individual
 #pylint: disable=E1101
 
 # Size of window -------------------
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 # TODO gonna add window extension for info and neural net
-
-
 
 
 # Size of each block - apple and snake 
@@ -55,189 +54,6 @@ large_font = pygame.font.SysFont('verdana', 70)  # size font 70
 # 			return self.apple_position
 
 		
-
-class Snake:
-	def __init__(self):
-		self.head_position = [380,300]
-		self.body = [[380, 300], [360, 300], [340, 300]]
-		self.direction = 'RIGHT'
-		self.change_direction_to = self.direction
-		self.score = 0
-		self.fitness = 0
-		self.clock = pygame.time.Clock()
-		self.time = 0
-		self.apple_position = 0
-		self.apple_on_game = False
-		self.brain=0
-		
-
-	def spawn_apple(self):
-		if self.apple_on_game == False:
-			self.apple_position = [random.randint(0,(WINDOW_WIDTH-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE, 
-									random.randint(0,(WINDOW_HEIGHT-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE]
-			self.apple_on_game = True
-			return self.apple_position
-
-	def change_direction(self, dir):
-		if dir == 'RIGHT' and not self.direction == 'LEFT':
-			self.direction = 'RIGHT'
-		elif dir == 'LEFT' and not self.direction == 'RIGHT':
-			self.direction = 'LEFT'
-		elif dir == 'UP' and not self.direction == 'DOWN':
-			self.direction = 'UP'
-		elif dir == 'DOWN' and not self.direction == 'UP':
-			self.direction = 'DOWN'
-		
-	def move(self):
-		if self.direction == 'RIGHT':
-			self.head_position[0] += BLOCK_SIZE
-		elif self.direction == 'LEFT':
-			self.head_position[0] -= BLOCK_SIZE
-		elif self.direction == 'UP':
-			self.head_position[1] -= BLOCK_SIZE
-		elif self.direction == 'DOWN':
-			self.head_position[1] += BLOCK_SIZE
-
-		self.body.insert(0, list(self.head_position))
-		if self.head_position != self.apple_position:
-			self.body.pop() 
-
-	def collision(self):
-		if self.head_position[0] >= WINDOW_WIDTH or self.head_position[0] < 0:
-			return True
-		elif self.head_position[1] >= WINDOW_HEIGHT or self.head_position[1] < 0:
-			print(self.head_position[0], self.head_position[1])
-			return True
-
-		for bodyPart in self.body[1:]:
-			if self.head_position == bodyPart:
-				return True
-		return False
-
-	def eaten_apple(self):
-		if self.head_position == self.apple_position:
-			self.score += 1
-			return True
-		return False
-
-	def make_a_clock(self):
-		self.clock = pygame.time.Clock()
-
-	def get_time_alive(self):
-		self.clock.tick()
-		dt = self.clock.get_time()
-		self.time += dt
-		return self.time
-
-	def calcFitness(self):
-		if self.score < 10:
-			self.fitness = (self.time/1000) ** 2 + self.score **2
-		else:
-			self.fitness = (self.time/1000) * self.score ** 2
-		return round(self.fitness, 2)
-
-	# vision looks up in 8 directions
-	# takes in account, distance to apple, wall and body
-	# 8
-	def eyes(self):
-		vision=[]
-		# Up direction 
-		result = self.look_direction(vector = [0, -BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# UP/RIGHT direction
-		result = self.look_direction(vector = [BLOCK_SIZE, -BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# UP/LEFT direction
-		result = self.look_direction(vector = [-BLOCK_SIZE, -BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# RIGHT direction
-		result = self.look_direction(vector = [BLOCK_SIZE, 0])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# LEFT direction
-		result = self.look_direction(vector = [-BLOCK_SIZE, 0])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# DOWN direction
-		result = self.look_direction(vector = [0, BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# DOWN/RIGHTdirection
-		result = self.look_direction(vector = [BLOCK_SIZE, BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		# DOWN/LEFT direction
-		result = self.look_direction(vector = [-BLOCK_SIZE, BLOCK_SIZE])
-		vision.append(result[0])
-		vision.append(result[1])
-		vision.append(result[2])
-
-		
-		return vision
-
-	def look_direction(self, vector=[0,0]):
-		result=[]
-		# make list to matrix using numpy
-		vector = np.array(vector)
-		actual_pos = np.array(self.head_position)
-		applePos = np.array(self.apple_position)
-
-		appleFound = False
-		bodyFound = False
-		# (actual_pos[0] > 0) or (actual_pos[0] < WINDOW_WIDTH) or (actual_pos[1] > 0) or (actual_pos[1] < WINDOW_HEIGHT):
-		while actual_pos[0] > 0 and actual_pos[0] < WINDOW_WIDTH and actual_pos[1] > 0 and actual_pos[1] < WINDOW_HEIGHT:
-			actual_pos += vector
-			if not appleFound:
-				if actual_pos.all() == applePos.all():
-					head_pos=np.array(self.head_position)
-					norm_position = actual_pos-head_pos
-					distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
-					result.insert(0, 1/distance)
-					print('Apple FOUND !!!!')
-					appleFound = True
-
-			if not bodyFound:
-				# print('Hi')
-				for bodyPart in self.body[1:]:
-					actualPos = list(actual_pos) # if statements for numpy are bad..
-					# print('pos: ' ,actualPos)
-					# print('after hi', bodyPart)
-					if actualPos == bodyPart:
-						head_pos=np.array(self.head_position)
-						norm_position = actual_pos-head_pos
-						distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
-						result.insert(1, 1/distance)
-						bodyFound = True
-		
-		if not bodyFound:
-			result.insert(1, False)
-		if not appleFound:
-			result.insert(0, False)
-
-		head_pos=np.array(self.head_position)
-		norm_position = actual_pos-head_pos
-		distance = np.sqrt(norm_position[0]**2 + norm_position[1]**2)/10
-		result.insert(2, 1/distance)
-
-		return list(result)
-
 
 
 # Functions to display Text ------------------------------------------
@@ -333,11 +149,10 @@ def drawApple(apple_pos):
 
 # -----------------------------------------------------------------
 # Game Definition -------------------------------------------------
-snake = Snake()
+snake = individual.Snake()
 
 # make brain
-snake.brain = neuralNetwork.NeuralNetwork(24,30,30,4)
-snake.brain.create_weight_matrices()
+
 # neural.create_weight_matrices()
 # print('output: \n', neural.output([20,10]))
 # apple = Apple()
@@ -348,7 +163,7 @@ snake.make_a_clock()
 
 gameExit = False
 gameOver = False
-
+i=1 # delete this after
 while not gameExit:
 	if gameOver == True:
 		message_to_screen("Game Over", 	RED, -50, "large")
@@ -382,7 +197,9 @@ while not gameExit:
 			elif event.key == pygame.K_p:
 				pause()		
 	
-	print(snake.eyes())
+	print('iteration: ', i)
+	i += 1
+	snake.decide_where_to_move()
 
 	snake.move()
 	if snake.collision():
@@ -411,7 +228,7 @@ while not gameExit:
 	# 	screen.blit(bodyPart, (apple.apple_position[0], apple.apple_position[1]))
 		
 	pygame.display.flip()
-	clock.tick(30)
+	clock.tick(2)
 
 # write to file 
 # myData = [['Time', 'Score', 'Fitness'],
