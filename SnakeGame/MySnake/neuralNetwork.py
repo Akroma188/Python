@@ -60,4 +60,4 @@ print('output: \n', neural.output([20,10]))
 print('wih: \n', neural.wih)
 [r, c] = neural.wih.shape
 
-print(neural.wih)
+print(neural.wih * 50 + neural.wih *20)

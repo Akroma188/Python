@@ -13,6 +13,7 @@ class Snake:
 		self.head_position = [380,300]
 		self.body = [[380, 300], [360, 300], [340, 300]]
 		self.direction = 'RIGHT'
+		self.alive = True
 		self.score = 0
 		self.fitness = 0
 		# self.clock = pygame.time.Clock()
@@ -231,4 +232,16 @@ class Snake:
 		self.brain.wih = matrices[0]
 		self.brain.whh = matrices[1]
 		self.brain.who = matrices[2]
+
+	def reset(self):
+		self.head_position = [380,300]
+		self.body = [[380, 300], [360, 300], [340, 300]]
+		self.direction = 'RIGHT'
+		self.alive = True
+		self.score = 0
+		self.fitness = 0
+		# self.clock = pygame.time.Clock()
+		self.time = 0
+		self.apple_position = 0
+		self.apple_on_game = False
 
