@@ -215,18 +215,18 @@ class Snake:
 
 		for matrix in matrices:
 			[r, c] = matrix.shape
-			for i in range(r):
-				for j in range(c):
+			for i in range(r-1):
+				for j in range(c-1):
 					# random number for mutation rate if it is below the threshold mutate the snake
 					random_number = random.randint(0,100)
 					if random_number < mutation_threshold:
 						value = [-10, 10]
 						pick = random.randint(0, 1)
 						matrix[i, j] = matrix[i, j] * (1 - value[pick]/100)
-						if matrix[i, j] < -1:
-							matrix[i, j] = -1
-						elif matrix[i, j] > 1:
-							matrix[i, j] = 1
+					if matrix[i, j] < -1:
+						matrix[i, j] = -1
+					elif matrix[i, j] > 1:
+						matrix[i, j] = 1
 
 		self.brain.wih = matrices[0]
 		self.brain.whh = matrices[1]

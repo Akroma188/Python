@@ -23,17 +23,17 @@ class NeuralNetwork:
         # generate random distribution for weights between input and 1st hidden layer
         rad = 1 / np.sqrt(self.num_input + self.bias)
         X = truncated_normal(0, 1, -rad, rad)
-        self.wih = X.rvs((self.num_first_hidden, self.num_input + self.bias))
+        self.wih = np.round(X.rvs((self.num_first_hidden, self.num_input + self.bias)), 4)
 
         # generate random distribution for weights between 1st hidden layer and 2nd hidden layer
         rad = 1 / np.sqrt(self.num_first_hidden + self.bias)
         X = truncated_normal(0, 1, -rad, rad)
-        self.whh = X.rvs((self.num_sec_hidden, self.num_first_hidden + self.bias))
+        self.whh = np.round(X.rvs((self.num_sec_hidden, self.num_first_hidden + self.bias)), 4)
 
         # generate random distribution for weights between 2nd hidden layer and output layer
         rad = 1 / np.sqrt(self.num_sec_hidden + self.bias)
         X = truncated_normal(0, 1, -rad, rad) 
-        self.who = X.rvs((self.num_output, self.num_sec_hidden + self.bias))   
+        self.who = np.round(X.rvs((self.num_output, self.num_sec_hidden + self.bias)), 4)
 
     def output(self, input):
         input = np.concatenate((input, [1])) # add bias node
@@ -60,4 +60,4 @@ print('output: \n', neural.output([20,10]))
 print('wih: \n', neural.wih)
 [r, c] = neural.wih.shape
 
-print(neural.wih[0,1])
+print(neural.wih)
