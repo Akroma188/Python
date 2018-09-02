@@ -2,12 +2,12 @@ import pygame
 import random
 import numpy as np
 import neuralNetwork as neural
+from gameFunctions import BLOCK_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH
 
+# BLOCK_SIZE = 20
+# WINDOW_WIDTH = 800
+# WINDOW_HEIGHT = 600
 
-BLOCK_SIZE = 20
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
-mutation_threshold = 10
 class Snake:
 	def __init__(self):
 		self.head_position = [380,300]
@@ -24,11 +24,9 @@ class Snake:
 		self.brain.create_weight_matrices()
 		
 	def spawn_apple(self):
-		if self.apple_on_game == False:
 			self.apple_position = [random.randint(0,(WINDOW_WIDTH-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE, 
 									random.randint(0,(WINDOW_HEIGHT-BLOCK_SIZE)/BLOCK_SIZE) * BLOCK_SIZE]
 			self.apple_on_game = True
-			return self.apple_position
 
 	def change_direction(self, dir):
 		if dir == 'RIGHT' and not self.direction == 'LEFT':
@@ -39,26 +37,12 @@ class Snake:
 			self.direction = 'UP'
 		elif dir == 'DOWN' and not self.direction == 'UP':
 			self.direction = 'DOWN'
-		
-	def move(self):
-		if self.direction == 'RIGHT':
-			self.head_position[0] += BLOCK_SIZE
-		elif self.direction == 'LEFT':
-			self.head_position[0] -= BLOCK_SIZE
-		elif self.direction == 'UP':
-			self.head_position[1] -= BLOCK_SIZE
-		elif self.direction == 'DOWN':
-			self.head_position[1] += BLOCK_SIZE
-
-		self.body.insert(0, list(self.head_position))
-		if self.head_position != self.apple_position:
-			self.body.pop() 
 
 	def collision(self):
 		if self.head_position[0] >= WINDOW_WIDTH or self.head_position[0] < 0:
 			return True
 		elif self.head_position[1] >= WINDOW_HEIGHT or self.head_position[1] < 0:
-			print(self.head_position[0], self.head_position[1])
+			
 			return True
 
 		for bodyPart in self.body[1:]:
@@ -80,6 +64,7 @@ class Snake:
 		return self.time
 
 	def calcFitness(self):
+		self.get_time_alive()
 		if self.score < 10:
 			self.fitness = ((self.time) ** 2 + self.score **2)/10
 		else:
@@ -162,7 +147,6 @@ class Snake:
 					if distance == 0:
 							distance = 1
 					result.insert(0, np.round(1/distance, 4))
-					print('Apple FOUND !!!!')
 					appleFound = True
 
 			if not bodyFound:
@@ -207,31 +191,27 @@ class Snake:
 		if index == 3:
 			self.change_direction('LEFT')
 
-	def mutate(self):
-		wih = self.brain.wih
-		whh = self.brain.whh
-		who = self.brain.who
+	def move(self):
+		self.decide_where_to_move()
 
-		matrices = [wih, whh, who]
+		if self.direction == 'RIGHT':
+			self.head_position[0] += BLOCK_SIZE
+		elif self.direction == 'LEFT':
+			self.head_position[0] -= BLOCK_SIZE
+		elif self.direction == 'UP':
+			self.head_position[1] -= BLOCK_SIZE
+		elif self.direction == 'DOWN':
+			self.head_position[1] += BLOCK_SIZE
 
-		for matrix in matrices:
-			[r, c] = matrix.shape
-			for i in range(r-1):
-				for j in range(c-1):
-					# random number for mutation rate if it is below the threshold mutate the snake
-					random_number = random.randint(0,100)
-					if random_number < mutation_threshold:
-						value = [-10, 10]
-						pick = random.randint(0, 1)
-						matrix[i, j] = matrix[i, j] * (1 - value[pick]/100)
-					if matrix[i, j] < -1:
-						matrix[i, j] = -1
-					elif matrix[i, j] > 1:
-						matrix[i, j] = 1
+		self.body.insert(0, list(self.head_position))
+		if self.head_position != self.apple_position:
+			self.body.pop() 
 
-		self.brain.wih = matrices[0]
-		self.brain.whh = matrices[1]
-		self.brain.who = matrices[2]
+		if self.collision():
+			self.alive = False
+		
+		if self.eaten_apple():
+			self.apple_on_game = False
 
 	def reset(self):
 		self.head_position = [380,300]

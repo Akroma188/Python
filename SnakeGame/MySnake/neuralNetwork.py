@@ -53,11 +53,11 @@ class NeuralNetwork:
 
 
 
-neural = NeuralNetwork(2,4,4,4)
-neural.create_weight_matrices()
-print('output: \n', neural.output([20,10]))
+# neural = NeuralNetwork(2,4,4,4)
+# neural.create_weight_matrices()
+# print('output: \n', neural.output([20,10]))
 
-print('wih: \n', neural.wih)
-[r, c] = neural.wih.shape
+# print('wih: \n', neural.wih)
+# [r, c] = neural.wih.shape
 
-print(neural.wih * 50 + neural.wih *20)
+# print(neural.wih * 50 + neural.wih *20)

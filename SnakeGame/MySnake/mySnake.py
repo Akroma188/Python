@@ -192,14 +192,14 @@ while not gameExit:
 
 
 	if not snake.apple_on_game:
-		applePlace = snake.spawn_apple()
+		snake.spawn_apple()
 		snake.apple_on_game = True
 
 	screen.fill(BACKGROUND)
 	print_time(snake.get_time_alive())
 	print_best_fitness(snake.calcFitness())
 	score(snake.score)
-	drawApple(applePlace)
+	drawApple(snake.apple_pos)
 	draw_snake(snake.head_position, snake.body, snake.direction, snakeHead, bodyPart)
 	
 	# screen.blit(snakeHead, (snake.head_position[0], snake.head_position[1]))

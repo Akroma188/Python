@@ -1,8 +1,8 @@
 import individual
 import random
 
-POPULATION = 1000
-NATURAL_RATE = 0.01
+POPULATION = 50
+NATURAL_RATE = 0.1
 MUTATION_THRESHOLD = 10
 
 class Population:
@@ -18,6 +18,8 @@ class Population:
     def check_alive_population(self):
         # check if all members are dead
         number = sum(element.alive == False for element in self.population)
+        print("Died so far: ", number)
+        print("len: ", len(self.population))
         if number == len(self.population):
             return True
         else:
@@ -27,10 +29,10 @@ class Population:
 
     def sort_by_fitness(self):
         self.population.sort(key = lambda pop: pop.fitness)
-        self.bestIndividial = self.population[0]
+
 
     def natural_selection(self):
-        survived = round(POPULATION * NATURAL_RATE, 0) # just to be safe
+        survived = round(POPULATION * NATURAL_RATE) # just to be safe
         for x in range(survived):
             survivor = self.population[x]
             self.next_population.append(survivor)
@@ -76,23 +78,27 @@ class Population:
         return child
 
     def new_generation(self):
+        next_population = []
+        self.sort_by_fitness()
         self.natural_selection()
 
-        while len(self.next_population) < POPULATION:
+        while len(next_population) < POPULATION:
             rand_1 = random.randint(0, POPULATION*NATURAL_RATE-1) 
             rand_2 = random.randint(0, POPULATION*NATURAL_RATE-1) 
             parent_1 = self.population[rand_1]
             parent_2 = self.population[rand_2]
             child = self.crossover(parent_1, parent_2)
             child = self.mutate(child)
-            self.next_population.append(child)
+            next_population.append(child)
 
-        for element in self.next_population:
+        for element in next_population:
             element.reset()
-        self.population = self.next_population
-        self.next_population.clear()
+        
+        self.population = next_population
+        self.bestIndividial = self.population[0]
         self.generation += 1
+        
 
 
-this = Population()
-print(this.population)
+# this = Population()
+# print(this.population)
